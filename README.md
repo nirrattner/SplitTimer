@@ -1,0 +1,2 @@
+# SplitTimer
+Speedrun Timer
