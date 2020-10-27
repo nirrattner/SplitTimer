@@ -18,27 +18,22 @@ public class SplitTimerApplication extends Application {
 
   @Override
   public void start(Stage stage) {
-    try {
-      Injector injector = Guice.createInjector(new SplitTimerModule(stage));
-      Scene scene = injector.getInstance(SplitTimerScene.class);
-      HotkeyInputController hotkeyInputController = injector.getInstance(HotkeyInputController.class);
+    Injector injector = Guice.createInjector(new SplitTimerModule(stage));
+    Scene scene = injector.getInstance(SplitTimerScene.class);
+    HotkeyInputController hotkeyInputController = injector.getInstance(HotkeyInputController.class);
 
-      PROVIDER.register(KeyStroke.getKeyStroke("SPACE"), hotkeyInputController);
-      PROVIDER.register(KeyStroke.getKeyStroke("R"), hotkeyInputController);
+    PROVIDER.register(KeyStroke.getKeyStroke("SPACE"), hotkeyInputController);
+    PROVIDER.register(KeyStroke.getKeyStroke("R"), hotkeyInputController);
 
-      stage.setTitle(TITLE);
-      stage.setScene(scene);
-      stage.show();
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-      throw e;
-    }
+    stage.setTitle(TITLE);
+    stage.setScene(scene);
+    stage.show();
   }
 
   public static void main(String[] args) {
     try {
       launch(args);
-    } catch (Exception e) {
+    } finally {
       PROVIDER.reset();
       PROVIDER.stop();
     }
