@@ -3,6 +3,7 @@ package com.nirrattner.splittimer;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nirrattner.splittimer.controllers.HotkeyInputController;
+import com.nirrattner.splittimer.controllers.InputController;
 import com.nirrattner.splittimer.views.SplitTimerScene;
 import com.tulskiy.keymaster.common.Provider;
 import javafx.application.Application;
@@ -20,10 +21,11 @@ public class SplitTimerApplication extends Application {
   public void start(Stage stage) {
     Injector injector = Guice.createInjector(new SplitTimerModule(stage));
     Scene scene = injector.getInstance(SplitTimerScene.class);
+    InputController inputController = injector.getInstance(InputController.class);
     HotkeyInputController hotkeyInputController = injector.getInstance(HotkeyInputController.class);
 
+    scene.setOnKeyPressed(inputController);
     PROVIDER.register(KeyStroke.getKeyStroke("SPACE"), hotkeyInputController);
-    PROVIDER.register(KeyStroke.getKeyStroke("R"), hotkeyInputController);
 
     stage.setTitle(TITLE);
     stage.setScene(scene);

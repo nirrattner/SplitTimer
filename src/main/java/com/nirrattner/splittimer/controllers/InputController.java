@@ -18,9 +18,6 @@ public class InputController implements EventHandler<KeyEvent> {
   @Override
   public void handle(KeyEvent event) {
     switch (event.getCode()) {
-      case SPACE:
-        stateController.split();
-        break;
       case R:
         stateController.reset();
         break;

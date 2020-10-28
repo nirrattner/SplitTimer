@@ -24,9 +24,6 @@ public class HotkeyInputController implements HotKeyListener {
       case KeyEvent.VK_SPACE:
         Platform.runLater(stateController::split);
         break;
-      case KeyEvent.VK_R:
-        Platform.runLater(stateController::reset);
-        break;
     }
   }
 }
