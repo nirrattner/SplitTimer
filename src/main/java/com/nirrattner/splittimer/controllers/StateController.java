@@ -2,6 +2,7 @@ package com.nirrattner.splittimer.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.nirrattner.splittimer.controllers.listeners.FileStateListener;
@@ -69,7 +70,7 @@ public class StateController {
         splits.set(
             splitsState.getCurrentIndex(),
             splitsState.getSplits().get(splitsState.getCurrentIndex())
-                .withValue(now - timerState.getStartTime()));
+                .withTimestamp(now - timerState.getStartTime()));
         splitsState = splitsState.withSplits(splits);
         if (splitsState.getCurrentIndex() == splitsState.getSplits().size()) {
           timerState = timerState
@@ -92,7 +93,7 @@ public class StateController {
               splitsState = splitsState
                   .withSplits(
                       splitsState.getSplits().stream()
-                          .map(split -> split.withValue(Optional.empty()))
+                          .map(split -> split.withTimestamp(Optional.empty()))
                           .collect(Collectors.toUnmodifiableList()));
               notifyListeners();
             });
@@ -103,7 +104,9 @@ public class StateController {
         .setFile(file)
         .build();
     try {
-      List<SplitConfiguration> configurations = objectMapper.readValue(file, new TypeReference<>() {});
+      List<SplitConfiguration> configurations = objectMapper.readValue(
+          file,
+          new TypeReference<>() {});
       this.splitsState = SplitsState.builder()
           .addAllSplits(
               configurations.stream()
@@ -126,29 +129,41 @@ public class StateController {
 
   public void save() {
     fileState.getFile().ifPresent(file -> {
-      boolean isBestRun = timerState.getState() == TimerStateIF.State.DONE
-          && (timerState.getEndTime() - timerState.getStartTime()) < splitsState.getBestRunTime();
-      List<SplitConfiguration> configurations = splitsState.getSplits().stream()
-          .map(split -> toSplitConfiguration(split, isBestRun))
-          .collect(Collectors.toUnmodifiableList());
+      boolean isBestRun = splitsState.getBestCompletedRunTime()
+          .map(bestCompletedRunTime -> timerState.getState() == TimerStateIF.State.DONE
+              && (timerState.getEndTime() - timerState.getStartTime()) < bestCompletedRunTime)
+          .orElse(!splitsState.hasBestRunSplitsRemaining());
+      ImmutableList.Builder<SplitConfiguration> configurations = ImmutableList.builder();
+      for (int i = 0; i < splitsState.getSplits().size(); i++) {
+        configurations.add(
+            toSplitConfiguration(
+                splitsState.getSplits().get(i),
+                i > 0
+                    ? splitsState.getSplits().get(i - 1).getTimestamp()
+                    : Optional.of(0L),
+                isBestRun));
+      }
       try {
-        objectMapper.writeValue(file, configurations);
+        objectMapper.writeValue(file, configurations.build());
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     });
   }
 
-  private SplitConfiguration toSplitConfiguration(Split split, boolean isBestRun) {
+  private SplitConfiguration toSplitConfiguration(
+      Split split,
+      Optional<Long> previousSplitTimeStamp,
+      boolean isBestRun) {
     SplitConfiguration.Builder splitConfiguration = SplitConfiguration.builder()
         .from(split.getConfiguration());
-    split.getValue()
+    split.getTimestamp()
         .ifPresent(value -> {
           if (isBestRun) {
-            splitConfiguration.setBestRunValue(split.getValue());
+            splitConfiguration.setBestRunTimestamp(split.getTimestamp());
           }
-          if (value < split.getConfiguration().getBestValue().orElse(Long.MAX_VALUE)) {
-            splitConfiguration.setBestValue(value);
+          if (value - previousSplitTimeStamp.get() < split.getConfiguration().getBestTime().orElse(Long.MAX_VALUE)) {
+            splitConfiguration.setBestTime(value - previousSplitTimeStamp.get());
           }
         });
     return splitConfiguration.build();

@@ -3,8 +3,10 @@ package com.nirrattner.splittimer.models;
 import com.nirrattner.splittimer.models.style.ImmutableStyle;
 import org.immutables.value.Value;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @ImmutableStyle
 @Value.Immutable
@@ -15,16 +17,23 @@ public interface SplitsStateIF {
   default int getCurrentIndex() {
     return (int) getSplits()
         .stream()
-        .filter(split -> split.getValue().isPresent())
+        .filter(split -> split.getTimestamp().isPresent())
         .count();
   }
 
   @Value.Lazy
-  default long getBestRunTime() {
+  default Optional<Long> getBestCompletedRunTime() {
+    return getSplits().get(getSplits().size() - 1)
+        .getConfiguration()
+        .getBestRunTimestamp();
+  }
+
+  @Value.Lazy
+  default boolean hasBestRunSplitsRemaining() {
     return getSplits().stream()
+        .skip(getCurrentIndex())
         .map(Split::getConfiguration)
-        .map(SplitConfiguration::getBestRunValue)
-        .flatMap(Optional::stream)
-        .reduce(0L, Long::sum);
+        .map(SplitConfiguration::getBestRunTimestamp)
+        .anyMatch(Optional::isPresent);
   }
 }

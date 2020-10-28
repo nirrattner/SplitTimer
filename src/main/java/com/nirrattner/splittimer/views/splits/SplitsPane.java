@@ -60,10 +60,9 @@ public class SplitsPane extends ScrollPane implements SplitsStateListener {
     nameLabel.getStyleClass().add(LABEL_STYLE_CLASS);
     hBox.getChildren().add(nameLabel);
 
-    split.getValue()
+    split.getTimestamp()
         .stream()
-        .flatMap(value -> split.getConfiguration().getBestRunValue()
-            .or(split.getConfiguration()::getBestValue)
+        .flatMap(value -> split.getConfiguration().getBestRunTimestamp()
             .stream()
             .map(previousValue -> value - previousValue))
         .map(timeFormatter::formatSplitDifference)
@@ -74,7 +73,7 @@ public class SplitsPane extends ScrollPane implements SplitsStateListener {
         .peek(pane -> HBox.setHgrow(pane, Priority.ALWAYS))
         .forEach(hBox.getChildren()::add);
 
-    split.getValue()
+    split.getTimestamp()
         .stream()
         .map(timeFormatter::formatSplit)
         .map(Label::new)
@@ -83,7 +82,7 @@ public class SplitsPane extends ScrollPane implements SplitsStateListener {
         .peek(pane -> pane.setAlignment(Pos.BASELINE_RIGHT))
         .peek(pane -> HBox.setHgrow(pane, Priority.ALWAYS))
         .peek(pane -> {
-          if (split.getConfiguration().getBestRunValue().isPresent() || split.getConfiguration().getBestValue().isPresent()) {
+          if (split.getConfiguration().getBestRunTimestamp().isPresent() || split.getConfiguration().getBestTime().isPresent()) {
             pane.setMinWidth(LABEL_WIDTH);
             pane.setMaxWidth(LABEL_WIDTH);
           }

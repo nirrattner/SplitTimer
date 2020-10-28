@@ -9,5 +9,5 @@ import java.util.Optional;
 @Value.Immutable
 public interface SplitIF {
   SplitConfiguration getConfiguration();
-  Optional<Long> getValue();
+  Optional<Long> getTimestamp();
 }

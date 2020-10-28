@@ -9,6 +9,6 @@ import java.util.Optional;
 @Value.Immutable
 public interface SplitConfigurationIF {
   String getName();
-  Optional<Long> getBestValue();
-  Optional<Long> getBestRunValue();
+  Optional<Long> getBestTime();
+  Optional<Long> getBestRunTimestamp();
 }
