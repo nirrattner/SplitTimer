@@ -16,6 +16,18 @@
   -fx-padding: 0 10px;
 }
 
+.best-split-label {
+  -fx-text-fill: gray;
+}
+
+.plus-split-label {
+  -fx-text-fill: red;
+}
+
+.minus-split-label {
+  -fx-text-fill: green;
+}
+
 .timer-label {
   -fx-font-size: 28pt;
 }
